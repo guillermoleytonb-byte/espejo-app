@@ -115,20 +115,18 @@ async function updateProfileFromAnalysis(
   analysis: string,
   currentProfile: Profile | null
 ) {
-  const areasMatch = analysis.match(/Mentalidad: (\d+)\/10[\s\S]*?Cuerpo: (\d+)\/10[\s\S]*?Relaciones: (\d+)\/10[\s\S]*?Trabajo: (\d+)\/10[\s\S]*?Finanzas: (\d+)\/10[\s\S]*?Emocional: (\d+)\/10[\s\S]*?Espiritual: (\d+)\/10/)
+  let newAreas = currentProfile?.life_areas || {}
+  let newPurpose = currentProfile?.purpose || ''
 
-  const newAreas = areasMatch ? {
-    mentalidad: parseInt(areasMatch[1]),
-    cuerpo: parseInt(areasMatch[2]),
-    relaciones: parseInt(areasMatch[3]),
-    trabajo: parseInt(areasMatch[4]),
-    finanzas: parseInt(areasMatch[5]),
-    emocional: parseInt(areasMatch[6]),
-    espiritual: parseInt(areasMatch[7]),
-  } : currentProfile?.life_areas || {}
-
-  const purposeMatch = analysis.match(/\*\*ZONA DE PROPÓSITO\*\*\n([\s\S]*?)\n\n\*\*/)
-  const newPurpose = purposeMatch ? purposeMatch[1].trim() : currentProfile?.purpose || ''
+  const areasMatch = analysis.match(/\[AREAS_DATA\]([\s\S]*?)\[\/AREAS_DATA\]/)
+  if (areasMatch) {
+    try {
+      const data = JSON.parse(areasMatch[1].trim())
+      const { proposito, ...areas } = data
+      if (Object.values(areas).some(v => Number(v) > 0)) newAreas = areas
+      if (proposito) newPurpose = proposito
+    } catch {}
+  }
 
   await supabase.from('profiles').upsert({
     id: userId,

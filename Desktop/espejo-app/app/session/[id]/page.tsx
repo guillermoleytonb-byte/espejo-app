@@ -17,6 +17,7 @@ function TypingIndicator() {
 
 function parseMessageContent(content: string) {
   content = content.replace(/\[INSIGHTS_DATA\][\s\S]*?\[\/INSIGHTS_DATA\]/g, '').trim()
+  content = content.replace(/\[AREAS_DATA\][\s\S]*?\[\/AREAS_DATA\]/g, '').trim()
   const analysisStart = content.indexOf('[INICIO_ANÁLISIS]')
   const analysisEnd = content.indexOf('[FIN_ANÁLISIS]')
 
@@ -150,6 +151,10 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
     } catch (err) {
       setIsTyping(false)
       console.error(err)
+      setMessages(prev => [
+        ...prev.filter((_, i) => i < prev.length - 1),
+        { role: 'assistant', content: 'Hubo un problema al conectar. Por favor intenta de nuevo.' }
+      ])
     } finally {
       setIsLoading(false)
       inputRef.current?.focus()

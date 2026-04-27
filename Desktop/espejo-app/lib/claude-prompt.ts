@@ -113,6 +113,12 @@ Espiritual: [X]/10
 [2-3 recursos específicamente conectados a algo que el usuario dijo. NUNCA listas genéricas. Conecta cada recurso con sus palabras exactas]
 [FIN_ANÁLISIS]
 
+Inmediatamente después del [FIN_ANÁLISIS], incluye este bloque JSON con las puntuaciones exactas del análisis:
+[AREAS_DATA]
+{"mentalidad":0,"cuerpo":0,"relaciones":0,"trabajo":0,"finanzas":0,"emocional":0,"espiritual":0,"proposito":""}
+[/AREAS_DATA]
+Rellena los números del 1 al 10 y el propósito con 1-2 frases. Este bloque no es visible para el usuario.
+
 ---
 
 BANCO DE RECURSOS (úsalos solo si conectan genuinamente con lo que el usuario dijo):

@@ -36,7 +36,7 @@ export default function LandingPage() {
 
           <StartButton />
 
-          <p className="text-xs opacity-30 mt-6">Sin registro · Sin contraseña · Tu progreso se guarda en este dispositivo</p>
+          <p className="text-xs opacity-30 mt-6">Sin registro · Sin contraseña · Tu progreso se guarda entre sesiones</p>
         </div>
       </section>
 

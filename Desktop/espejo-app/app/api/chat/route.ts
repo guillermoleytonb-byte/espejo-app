@@ -71,6 +71,7 @@ export async function POST(request: Request) {
 
       if (fullResponse.includes('[FIN_ANÁLISIS]')) {
         await updateProfileFromAnalysis(supabase, user.id, fullResponse, profile)
+        await supabase.from('messages').delete().eq('session_id', sessionId)
       }
 
       if (fullResponse.includes('[/INSIGHTS_DATA]')) {

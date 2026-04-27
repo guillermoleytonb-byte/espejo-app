@@ -255,7 +255,7 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
       {hasAnalysis && (
         <div className="flex-shrink-0 px-4 py-6 border-t text-center" style={{ borderColor: '#1f1f1f' }}>
           <p className="text-sm opacity-50 mb-4">Sesión completada</p>
-          <div className="flex gap-3 justify-center">
+          <div className="flex gap-3 justify-center mb-6">
             <Link
               href="/profile"
               className="px-6 py-3 rounded-full text-sm font-medium"
@@ -270,6 +270,10 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
             >
               Inicio
             </Link>
+          </div>
+          <div className="max-w-sm mx-auto rounded-xl px-4 py-3 text-xs leading-relaxed" style={{ background: '#111111', border: '1px solid #1f1f1f', color: '#f0ede8' }}>
+            <p className="opacity-40 uppercase tracking-widest text-xs mb-1">Tu privacidad</p>
+            <p className="opacity-60">Esta conversación fue eliminada de nuestros servidores al completarse. Solo conservamos tu perfil y mapa de vida. Nadie puede leer lo que compartiste aquí.</p>
           </div>
         </div>
       )}

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import StartButton from './components/StartButton'
 
 export default function LandingPage() {
   return (
@@ -8,18 +9,9 @@ export default function LandingPage() {
         <span className="text-lg tracking-widest uppercase" style={{ color: '#d97706', letterSpacing: '0.25em' }}>
           espejo
         </span>
-        <div className="flex gap-4">
-          <Link href="/auth/login" className="text-sm opacity-60 hover:opacity-100 transition-opacity px-4 py-2">
-            Entrar
-          </Link>
-          <Link
-            href="/auth/signup"
-            className="text-sm px-4 py-2 rounded-full border transition-colors"
-            style={{ borderColor: '#d97706', color: '#d97706' }}
-          >
-            Comenzar
-          </Link>
-        </div>
+        <Link href="/privacy" className="text-xs opacity-30 hover:opacity-60 transition-opacity">
+          Privacidad
+        </Link>
       </nav>
 
       {/* Hero */}
@@ -42,15 +34,9 @@ export default function LandingPage() {
             y un espejo que recuerda lo que descubres.
           </p>
 
-          <Link
-            href="/auth/signup"
-            className="inline-block px-8 py-4 rounded-full text-sm tracking-wide transition-all hover:opacity-90"
-            style={{ background: '#d97706', color: '#0a0a0a', fontWeight: 600 }}
-          >
-            Comenzar mi viaje interior
-          </Link>
+          <StartButton />
 
-          <p className="text-xs opacity-30 mt-6">Gratis para comenzar · Sin tarjeta requerida</p>
+          <p className="text-xs opacity-30 mt-6">Sin registro · Sin contraseña · Tu progreso se guarda en este dispositivo</p>
         </div>
       </section>
 
@@ -86,7 +72,6 @@ export default function LandingPage() {
           ))}
         </div>
 
-        {/* Quote */}
         <div className="text-center mt-20 opacity-30">
           <p className="text-sm italic" style={{ fontFamily: 'Georgia, serif' }}>
             "El conocimiento de uno mismo es el comienzo de toda sabiduría."

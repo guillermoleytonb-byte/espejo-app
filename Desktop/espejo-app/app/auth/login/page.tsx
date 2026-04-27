@@ -122,6 +122,11 @@ export default function LoginPage() {
             Crear cuenta
           </Link>
         </p>
+        <p className="text-center text-xs opacity-20 mt-4">
+          <Link href="/privacy" className="underline hover:opacity-40 transition-opacity">
+            Política de privacidad
+          </Link>
+        </p>
       </div>
     </main>
   )

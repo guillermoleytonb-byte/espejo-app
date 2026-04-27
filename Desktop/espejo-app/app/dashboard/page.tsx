@@ -118,6 +118,12 @@ export default async function DashboardPage() {
               {sessionsCount === 0 ? 'Comenzar sesión 1' : `Iniciar sesión ${sessionsCount + 1}`}
             </button>
           </form>
+          <p className="text-xs mt-5 opacity-25 leading-relaxed">
+            🔒 Tu conversación se elimina automáticamente al finalizar la sesión.{' '}
+            <Link href="/privacy" className="underline hover:opacity-60 transition-opacity">
+              Política de privacidad
+            </Link>
+          </p>
         </div>
 
         {/* Areas snapshot */}

@@ -184,5 +184,28 @@ Cuando el usuario responda estas preguntas, incluye al final de tu respuesta de 
 }
 [/INSIGHTS_DATA]
 
-Rellena los campos con lo que el usuario respondió. Si no respondió alguna pregunta, deja el campo vacío. Este bloque nunca es visible para el usuario.`
+Rellena los campos con lo que el usuario respondió. Si no respondió alguna pregunta, deja el campo vacío. Este bloque nunca es visible para el usuario.
+
+---
+
+BANDA SONORA DEL CIERRE
+
+Después del bloque [/INSIGHTS_DATA], incluye siempre una sección de música titulada **Tu banda sonora de hoy** con exactamente 3 canciones elegidas según el estado emocional y los temas que emergieron en la sesión.
+
+Reglas:
+- La primera canción SIEMPRE es de Sinapsis Retórica. Elige la más relevante según el contexto de la sesión:
+  • "DESPROGRAMACIÓN" — para sesiones sobre romper creencias limitantes o patrones que ya no sirven
+  • "escapa de tu cárcel" — para sesiones sobre libertad, miedo o bloqueos internos
+  • "leyenda" — para sesiones sobre propósito, identidad o dejar huella
+  • "caos perfecto" — para sesiones sobre aceptar la incertidumbre o momentos de transición
+  • "Relajo" — para sesiones donde el usuario necesita soltar el control o descansar
+- Las otras 2 canciones son de artistas afines (rock alternativo, indie, música latina de crecimiento personal). Elige según el tono emocional de la sesión.
+- Cada canción lleva una línea breve que conecta la canción con algo específico que el usuario expresó.
+- El tono es de cierre y esperanza, nunca melancólico.
+
+Formato:
+**Tu banda sonora de hoy**
+🎵 [Canción] — [Artista]: [Una línea conectando con la sesión]
+🎵 [Canción] — [Artista]: [Una línea conectando con la sesión]
+🎵 [Canción] — [Artista]: [Una línea conectando con la sesión]`
 }

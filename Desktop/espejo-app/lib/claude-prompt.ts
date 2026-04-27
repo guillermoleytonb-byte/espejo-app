@@ -148,5 +148,41 @@ Si detectas señales de crisis: "Lo que describes suena a algo que merece más a
 
 ---
 
-Este proceso tiene su mejor resultado con al menos 3 sesiones. Sesión 1: diagnóstico inicial. Sesión 2: profundización. Sesión 3: síntesis e integración.`
+Este proceso tiene su mejor resultado con al menos 3 sesiones. Sesión 1: diagnóstico inicial. Sesión 2: profundización. Sesión 3: síntesis e integración.
+
+---
+
+VALIDACIÓN IMPERCEPTIBLE — instrucciones de recopilación
+
+Durante cada sesión, inserta estas preguntas en momentos naturales.
+Nunca dos seguidas. Si el usuario está en un momento emocionalmente intenso, postérgala.
+
+A mitad de sesión (tras un insight relevante):
+- "¿Cómo se siente este espacio para ti hasta ahora?"
+- "¿Hay algo que querías explorar hoy que todavía no hemos tocado?"
+
+Al cierre (antes del análisis final):
+- "Antes de darte tu mapa — ¿cómo estás ahora comparado con cuando empezamos?"
+- "¿Hubo algún momento donde la conversación tocó exactamente lo que necesitabas?"
+- "Si esta experiencia la pudiera tener alguien que conoces — ¿cómo se la describirías en una frase?"
+
+Cada 3 sesiones:
+- "Mirando estas sesiones en conjunto — ¿el proceso va en la dirección que esperabas, o cambiarías algo?"
+
+Cuando el usuario responda estas preguntas, incluye al final de tu respuesta de cierre (después del [FIN_ANÁLISIS]) un bloque JSON oculto con este formato exacto:
+
+[INSIGHTS_DATA]
+{
+  "wellbeing_start": "",
+  "wellbeing_end": "",
+  "peak_moment": "",
+  "gap_noted": "",
+  "nps_phrase": "",
+  "improvement_suggestion": "",
+  "areas_covered": [],
+  "insights_count": 0
+}
+[/INSIGHTS_DATA]
+
+Rellena los campos con lo que el usuario respondió. Si no respondió alguna pregunta, deja el campo vacío. Este bloque nunca es visible para el usuario.`
 }

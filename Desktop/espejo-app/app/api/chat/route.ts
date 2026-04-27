@@ -73,6 +73,10 @@ export async function POST(request: Request) {
         await updateProfileFromAnalysis(supabase, user.id, fullResponse, profile)
       }
 
+      if (fullResponse.includes('[/INSIGHTS_DATA]')) {
+        await saveInsightsData(supabase, user.id, sessionId, fullResponse)
+      }
+
       controller.close()
     },
     cancel() {},
@@ -84,6 +88,24 @@ export async function POST(request: Request) {
       'Cache-Control': 'no-cache',
     },
   })
+}
+
+async function saveInsightsData(
+  supabase: ReturnType<typeof createClient> extends Promise<infer T> ? T : never,
+  userId: string,
+  sessionId: string,
+  fullResponse: string
+) {
+  const match = fullResponse.match(/\[INSIGHTS_DATA\]([\s\S]*?)\[\/INSIGHTS_DATA\]/)
+  if (!match) return
+  try {
+    const data = JSON.parse(match[1].trim())
+    await supabase.from('session_insights').upsert({
+      session_id: sessionId,
+      user_id: userId,
+      ...data,
+    })
+  } catch {}
 }
 
 async function updateProfileFromAnalysis(

@@ -16,6 +16,7 @@ function TypingIndicator() {
 }
 
 function parseMessageContent(content: string) {
+  content = content.replace(/\[INSIGHTS_DATA\][\s\S]*?\[\/INSIGHTS_DATA\]/g, '').trim()
   const analysisStart = content.indexOf('[INICIO_ANÁLISIS]')
   const analysisEnd = content.indexOf('[FIN_ANÁLISIS]')
 

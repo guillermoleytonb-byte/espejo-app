@@ -81,6 +81,45 @@ create policy "Usuarios insertan sus mensajes"
   );
 
 -- ============================================
+-- Tabla de insights de sesión (validación imperceptible)
+-- ============================================
+
+create table if not exists public.session_insights (
+  id uuid primary key default gen_random_uuid(),
+  session_id uuid references public.sessions(id) on delete cascade not null,
+  user_id uuid references auth.users(id) on delete cascade not null,
+  wellbeing_start text,
+  wellbeing_end text,
+  peak_moment text,
+  gap_noted text,
+  nps_phrase text,
+  improvement_suggestion text,
+  areas_covered jsonb default '[]'::jsonb,
+  insights_count integer default 0,
+  created_at timestamptz default now()
+);
+
+alter table public.session_insights enable row level security;
+
+create policy "Usuarios ven sus insights"
+  on public.session_insights for select using (auth.uid() = user_id);
+create policy "Usuarios insertan sus insights"
+  on public.session_insights for insert with check (auth.uid() = user_id);
+create policy "Usuarios actualizan sus insights"
+  on public.session_insights for update using (auth.uid() = user_id);
+
+-- Vista de reporte de retroalimentación agregada
+create or replace view public.feedback_report as
+select
+  count(distinct session_id) as total_sessions,
+  count(distinct user_id) as total_users,
+  array_agg(distinct peak_moment) filter (where peak_moment is not null) as peak_moments,
+  array_agg(distinct gap_noted) filter (where gap_noted is not null) as gaps_detected,
+  array_agg(distinct nps_phrase) filter (where nps_phrase is not null) as nps_phrases,
+  array_agg(distinct improvement_suggestion) filter (where improvement_suggestion is not null) as suggestions
+from public.session_insights;
+
+-- ============================================
 -- Trigger: crear perfil al registrar usuario
 -- ============================================
 

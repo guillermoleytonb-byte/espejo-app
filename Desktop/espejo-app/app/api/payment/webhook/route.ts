@@ -1,7 +1,14 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { MercadoPagoConfig, Payment } from 'mercadopago'
 
 const mp = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN! })
+
+function adminClient() {
+  return createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 
 export async function POST(request: Request) {
   try {
@@ -13,7 +20,7 @@ export async function POST(request: Request) {
 
       if (paymentData.status === 'approved' && paymentData.external_reference) {
         const userId = paymentData.external_reference
-        const supabase = await createClient()
+        const supabase = adminClient()
 
         const { data: profile } = await supabase
           .from('profiles')

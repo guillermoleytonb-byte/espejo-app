@@ -14,11 +14,24 @@ const AREA_LABELS: Record<string, string> = {
   espiritual: 'Espiritual',
 }
 
-export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ payment?: string }> }) {
+export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ payment?: string; payment_id?: string; collection_id?: string }> }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) redirect('/')
+
+  const sp2 = await searchParams
+  const paymentId = sp2.payment_id || sp2.collection_id
+  if (sp2.payment === 'success' && paymentId) {
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/payment/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentId }),
+        cache: 'no-store',
+      })
+    } catch {}
+  }
 
   const { data: profile } = await supabase
     .from('profiles')
@@ -33,7 +46,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
     .order('created_at', { ascending: false })
     .limit(5)
 
-  const sp = await searchParams
+  const sp = sp2
   const p = profile as Profile | null
   const sessionList = sessions as Session[] | null
   const name = p?.name || user.email?.split('@')[0] || 'Viajero'

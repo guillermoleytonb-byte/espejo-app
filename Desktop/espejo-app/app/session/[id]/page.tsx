@@ -79,7 +79,7 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
   const [isRecording, setIsRecording] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
-  const recognitionRef = useRef<SpeechRecognition | null>(null)
+  const recognitionRef = useRef<any>(null)
 
   function toggleRecording() {
     if (isRecording) {

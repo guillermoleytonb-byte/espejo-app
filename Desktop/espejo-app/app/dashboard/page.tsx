@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import PayButton from '../components/PayButton'
 import type { Profile, Session } from '@/lib/types'
 
 const AREA_LABELS: Record<string, string> = {
@@ -13,11 +14,11 @@ const AREA_LABELS: Record<string, string> = {
   espiritual: 'Espiritual',
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ payment?: string }> }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) redirect('/auth/login')
+  if (!user) redirect('/')
 
   const { data: profile } = await supabase
     .from('profiles')
@@ -32,22 +33,37 @@ export default async function DashboardPage() {
     .order('created_at', { ascending: false })
     .limit(5)
 
+  const sp = await searchParams
   const p = profile as Profile | null
   const sessionList = sessions as Session[] | null
   const name = p?.name || user.email?.split('@')[0] || 'Viajero'
   const sessionsCount = p?.sessions_count || 0
+  const credits = (p as any)?.credits || 0
   const areas = p?.life_areas || {}
   const hasAreas = Object.keys(areas).length > 0
+  const isFree = sessionsCount === 0
+  const canStart = isFree || credits > 0
 
   async function createSession() {
     'use server'
     const supabase2 = await createClient()
     const { data: { user: u } } = await supabase2.auth.getUser()
-    if (!u) redirect('/auth/login')
+    if (!u) redirect('/')
+
+    const { data: prof } = await supabase2.from('profiles').select('sessions_count, credits').eq('id', u.id).single()
+    const isFirstSession = !prof || prof.sessions_count === 0
+    if (!isFirstSession && (prof?.credits || 0) <= 0) redirect('/dashboard')
+
+    if (!isFirstSession) {
+      await supabase2.from('profiles').update({
+        credits: (prof?.credits || 1) - 1,
+        updated_at: new Date().toISOString(),
+      }).eq('id', u.id)
+    }
 
     const { data } = await supabase2.from('sessions').insert({
       user_id: u.id,
-      title: `Sesión ${(sessionsCount || 0) + 1}`,
+      title: `Sesión ${(prof?.sessions_count || 0) + 1}`,
     }).select().single()
 
     if (data) redirect(`/session/${data.id}`)
@@ -85,39 +101,66 @@ export default async function DashboardPage() {
           {sessionsCount > 0 && (
             <p className="text-sm opacity-40 mt-2">
               {sessionsCount} {sessionsCount === 1 ? 'sesión completada' : 'sesiones completadas'}
+              {credits > 0 && ` · ${credits} ${credits === 1 ? 'sesión disponible' : 'sesiones disponibles'}`}
             </p>
           )}
         </div>
+
+        {/* Payment success banner */}
+        {sp.payment === 'success' && (
+          <div className="rounded-xl px-5 py-4 mb-6 text-sm" style={{ background: '#14532d', border: '1px solid #16a34a', color: '#86efac' }}>
+            ¡Pago exitoso! Tu sesión está lista para comenzar.
+          </div>
+        )}
 
         {/* Start Session CTA */}
         <div
           className="rounded-2xl p-8 mb-8 text-center"
           style={{ background: '#111111', border: '1px solid #1f1f1f' }}
         >
-          {sessionsCount === 0 ? (
+          {isFree ? (
             <>
               <p className="text-sm opacity-50 mb-2">Tu viaje comienza aquí</p>
               <h2 className="text-xl font-light mb-6" style={{ fontFamily: 'Georgia, serif' }}>
                 ¿Listo para tu primera sesión?
               </h2>
+              <form action={createSession}>
+                <button
+                  type="submit"
+                  className="px-8 py-3 rounded-full text-sm font-medium transition-opacity hover:opacity-90"
+                  style={{ background: '#d97706', color: '#0a0a0a' }}
+                >
+                  Comenzar sesión 1 — Gratis
+                </button>
+              </form>
             </>
-          ) : (
+          ) : canStart ? (
             <>
               <p className="text-sm opacity-50 mb-2">El camino continúa</p>
               <h2 className="text-xl font-light mb-6" style={{ fontFamily: 'Georgia, serif' }}>
                 ¿Qué ha resonado desde la última vez?
               </h2>
+              <form action={createSession}>
+                <button
+                  type="submit"
+                  className="px-8 py-3 rounded-full text-sm font-medium transition-opacity hover:opacity-90"
+                  style={{ background: '#d97706', color: '#0a0a0a' }}
+                >
+                  Iniciar sesión {sessionsCount + 1}
+                </button>
+              </form>
+            </>
+          ) : (
+            <>
+              <p className="text-sm opacity-50 mb-2">Continúa tu viaje interior</p>
+              <h2 className="text-xl font-light mb-2" style={{ fontFamily: 'Georgia, serif' }}>
+                Sesión {sessionsCount + 1}
+              </h2>
+              <p className="text-xs opacity-40 mb-6">Cada sesión profundiza lo que descubriste en la anterior</p>
+              <PayButton />
+              <p className="text-xs opacity-30 mt-3">Pago único · Sin suscripción</p>
             </>
           )}
-          <form action={createSession}>
-            <button
-              type="submit"
-              className="px-8 py-3 rounded-full text-sm font-medium transition-opacity hover:opacity-90"
-              style={{ background: '#d97706', color: '#0a0a0a' }}
-            >
-              {sessionsCount === 0 ? 'Comenzar sesión 1' : `Iniciar sesión ${sessionsCount + 1}`}
-            </button>
-          </form>
           <p className="text-xs mt-5 opacity-25 leading-relaxed">
             🔒 Tu conversación se elimina automáticamente al finalizar la sesión.{' '}
             <Link href="/privacy" className="underline hover:opacity-60 transition-opacity">

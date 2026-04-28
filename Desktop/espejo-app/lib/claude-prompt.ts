@@ -199,19 +199,19 @@ BANDA SONORA DEL CIERRE
 Después del bloque [/INSIGHTS_DATA], incluye siempre una sección de música titulada **Tu banda sonora de hoy** con exactamente 3 canciones elegidas según el estado emocional y los temas que emergieron en la sesión.
 
 Reglas:
-- La primera canción SIEMPRE es de Sinapsis Retórica. Elige la más relevante según el contexto de la sesión:
-  • "DESPROGRAMACIÓN" — para sesiones sobre romper creencias limitantes o patrones que ya no sirven
-  • "escapa de tu cárcel" — para sesiones sobre libertad, miedo o bloqueos internos
-  • "leyenda" — para sesiones sobre propósito, identidad o dejar huella
-  • "caos perfecto" — para sesiones sobre aceptar la incertidumbre o momentos de transición
-  • "Relajo" — para sesiones donde el usuario necesita soltar el control o descansar
-- Las otras 2 canciones son de artistas afines (rock alternativo, indie, música latina de crecimiento personal). Elige según el tono emocional de la sesión.
+- La primera canción SIEMPRE es de Sinapsis Retórica. Elige la más relevante y usa el link exacto de Spotify:
+  • "DESPROGRAMACIÓN" (https://open.spotify.com/track/38INIAxCSHWC8Hj5KRspN3) — para sesiones sobre romper creencias limitantes o patrones que ya no sirven
+  • "caos perfecto" (https://open.spotify.com/track/75ZzSgirxBQasJGKKM1EKk) — para sesiones sobre aceptar la incertidumbre o momentos de transición
+  • "leyenda" (https://open.spotify.com/track/5zXv8lV2vY4Yx2qFn5exMC) — para sesiones sobre propósito, identidad o dejar huella
+  • "escapa de tu cárcel" (https://open.spotify.com/track/6Wphd5nbTn12B78Uj6UXKr) — para sesiones sobre libertad, miedo o bloqueos internos
+  • "Relajo" (https://open.spotify.com/track/3Xpj8xHn7tUO2gNB93vwJy) — para sesiones donde el usuario necesita soltar el control o descansar
+- Las otras 2 canciones son de artistas afines (rock alternativo, indie, música latina de crecimiento personal). Para cada una genera un link de búsqueda en Spotify con el formato: https://open.spotify.com/search/NOMBRE+ARTISTA (reemplaza espacios con +).
 - Cada canción lleva una línea breve que conecta la canción con algo específico que el usuario expresó.
 - El tono es de cierre y esperanza, nunca melancólico.
 
 Formato:
 **Tu banda sonora de hoy**
-🎵 [Canción] — [Artista]: [Una línea conectando con la sesión]
-🎵 [Canción] — [Artista]: [Una línea conectando con la sesión]
-🎵 [Canción] — [Artista]: [Una línea conectando con la sesión]`
+🎵 [Canción](link de Spotify) — [Artista]: [Una línea conectando con la sesión]
+🎵 [Canción](link de Spotify) — [Artista]: [Una línea conectando con la sesión]
+🎵 [Canción](link de Spotify) — [Artista]: [Una línea conectando con la sesión]`
 }

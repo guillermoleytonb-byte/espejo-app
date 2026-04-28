@@ -5,6 +5,13 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import type { ChatMessage } from '@/lib/types'
 
+const VOICES = [
+  { id: 'leo', label: 'Voz Espejo', description: 'La voz oficial de Espejo', icon: '🎙️' },
+  { id: 'rex', label: 'Voz masculina', description: 'Voz de hombre', icon: '👤' },
+  { id: 'ara', label: 'Voz femenina', description: 'Voz de mujer', icon: '👤' },
+  { id: 'none', label: 'Sin voz', description: 'Solo texto', icon: '🔇' },
+]
+
 function TypingIndicator() {
   return (
     <div className="flex gap-1 px-4 py-3 rounded-2xl rounded-bl-sm w-fit" style={{ background: '#1a1a1a' }}>
@@ -77,9 +84,12 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
   const [isTyping, setIsTyping] = useState(false)
   const [initialized, setInitialized] = useState(false)
   const [isRecording, setIsRecording] = useState(false)
+  const [voicePreference, setVoicePreference] = useState<string | null>(null)
+  const [isPlaying, setIsPlaying] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const recognitionRef = useRef<any>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
 
   function toggleRecording() {
     if (isRecording) {
@@ -105,6 +115,55 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
     setIsRecording(true)
   }
 
+  async function playTTS(text: string) {
+    const pref = voicePreference
+    if (!pref || pref === 'none') return
+
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current = null
+    }
+
+    const { before } = parseMessageContent(text)
+    const textToSpeak = before.trim()
+    if (!textToSpeak) return
+
+    try {
+      setIsPlaying(true)
+      const res = await fetch('/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: textToSpeak, voiceId: pref }),
+      })
+      if (!res.ok) { setIsPlaying(false); return }
+
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const audio = new Audio(url)
+      audioRef.current = audio
+      audio.play()
+      audio.onended = () => {
+        URL.revokeObjectURL(url)
+        audioRef.current = null
+        setIsPlaying(false)
+      }
+      audio.onerror = () => {
+        setIsPlaying(false)
+        audioRef.current = null
+      }
+    } catch {
+      setIsPlaying(false)
+    }
+  }
+
+  function stopAudio() {
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current = null
+      setIsPlaying(false)
+    }
+  }
+
   useEffect(() => {
     loadMessages()
   }, [sessionId])
@@ -122,14 +181,22 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
 
     if (storedMessages && storedMessages.length > 0) {
       setMessages(storedMessages.map(m => ({ role: m.role, content: m.content })))
+      const saved = localStorage.getItem('voicePreference') || 'leo'
+      setVoicePreference(saved)
       setInitialized(true)
     } else {
       setInitialized(true)
-      sendMessage('__INICIAR__', true)
+      // wait for voice selection before starting
     }
   }
 
-  async function sendMessage(userInput: string, isInit = false) {
+  function selectVoice(voiceId: string) {
+    localStorage.setItem('voicePreference', voiceId)
+    setVoicePreference(voiceId)
+    sendMessage('__INICIAR__', true, voiceId)
+  }
+
+  async function sendMessage(userInput: string, isInit = false, voiceId?: string) {
     const newMessages: ChatMessage[] = isInit
       ? [{ role: 'user', content: 'Hola, quiero comenzar.' }]
       : [...messages, { role: 'user', content: userInput }]
@@ -174,6 +241,11 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
           return updated
         })
       }
+
+      const activeVoice = voiceId ?? voicePreference
+      if (activeVoice && activeVoice !== 'none') {
+        await playTTSWithVoice(assistantContent, activeVoice)
+      }
     } catch (err) {
       setIsTyping(false)
       console.error(err)
@@ -185,6 +257,32 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
       setIsLoading(false)
       inputRef.current?.focus()
     }
+  }
+
+  async function playTTSWithVoice(text: string, voiceId: string) {
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current = null
+    }
+    const { before } = parseMessageContent(text)
+    const textToSpeak = before.trim()
+    if (!textToSpeak) return
+    try {
+      setIsPlaying(true)
+      const res = await fetch('/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: textToSpeak, voiceId }),
+      })
+      if (!res.ok) { setIsPlaying(false); return }
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const audio = new Audio(url)
+      audioRef.current = audio
+      audio.play()
+      audio.onended = () => { URL.revokeObjectURL(url); audioRef.current = null; setIsPlaying(false) }
+      audio.onerror = () => { setIsPlaying(false); audioRef.current = null }
+    } catch { setIsPlaying(false) }
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -208,6 +306,38 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
     )
   }
 
+  if (voicePreference === null) {
+    return (
+      <main className="min-h-screen flex flex-col items-center justify-center px-6" style={{ background: '#0a0a0a', color: '#f0ede8' }}>
+        <span className="text-xs tracking-widest uppercase mb-12 opacity-60" style={{ color: '#d97706', letterSpacing: '0.2em' }}>
+          espejo
+        </span>
+        <h2 className="text-2xl font-light mb-2 text-center" style={{ fontFamily: 'Georgia, serif' }}>
+          ¿Cómo quieres escuchar?
+        </h2>
+        <p className="text-xs opacity-40 mb-10 text-center">Elige la voz que te acompañará en esta sesión</p>
+        <div className="flex flex-col gap-3 w-full max-w-xs">
+          {VOICES.map(v => (
+            <button
+              key={v.id}
+              onClick={() => selectVoice(v.id)}
+              className="px-6 py-4 rounded-2xl text-left transition-all hover:border-amber-600"
+              style={{ background: '#111111', border: '1px solid #1f1f1f' }}
+            >
+              <div className="flex items-center gap-4">
+                <span style={{ fontSize: '22px' }}>{v.icon}</span>
+                <div>
+                  <p className="text-sm font-medium">{v.label}</p>
+                  <p className="text-xs opacity-40 mt-0.5">{v.description}</p>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </main>
+    )
+  }
+
   return (
     <main className="min-h-screen flex flex-col" style={{ background: '#0a0a0a', color: '#f0ede8' }}>
       {/* Header */}
@@ -215,9 +345,20 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
         <Link href="/dashboard" className="text-xs opacity-40 hover:opacity-100 transition-opacity">
           ← Inicio
         </Link>
-        <span className="text-xs tracking-widest uppercase opacity-60" style={{ color: '#d97706', letterSpacing: '0.2em' }}>
-          espejo
-        </span>
+        <div className="flex items-center gap-3">
+          {isPlaying && (
+            <button
+              onClick={stopAudio}
+              className="text-xs px-2 py-1 rounded-lg transition-opacity"
+              style={{ background: '#1a1a1a', color: '#d97706', border: '1px solid #d97706' }}
+            >
+              ⏹ detener
+            </button>
+          )}
+          <span className="text-xs tracking-widest uppercase opacity-60" style={{ color: '#d97706', letterSpacing: '0.2em' }}>
+            espejo
+          </span>
+        </div>
         {hasAnalysis && (
           <Link href="/profile" className="text-xs" style={{ color: '#d97706' }}>
             Ver perfil →

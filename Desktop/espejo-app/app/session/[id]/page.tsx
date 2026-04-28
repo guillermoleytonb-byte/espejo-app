@@ -93,7 +93,7 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
     recognition.lang = 'es-ES'
     recognition.continuous = false
     recognition.interimResults = false
-    recognition.onresult = (e: SpeechRecognitionEvent) => {
+    recognition.onresult = (e: any) => {
       const transcript = e.results[0][0].transcript
       setInput(prev => prev ? prev + ' ' + transcript : transcript)
       setIsRecording(false)

@@ -90,6 +90,7 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const recognitionRef = useRef<any>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const audioCtxRef = useRef<AudioContext | null>(null)
 
   function toggleRecording() {
     if (isRecording) {
@@ -115,53 +116,12 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
     setIsRecording(true)
   }
 
-  async function playTTS(text: string) {
-    const pref = voicePreference
-    if (!pref || pref === 'none') return
-
-    if (audioRef.current) {
-      audioRef.current.pause()
-      audioRef.current = null
-    }
-
-    const { before } = parseMessageContent(text)
-    const textToSpeak = before.trim()
-    if (!textToSpeak) return
-
-    try {
-      setIsPlaying(true)
-      const res = await fetch('/api/tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: textToSpeak, voiceId: pref }),
-      })
-      if (!res.ok) { setIsPlaying(false); return }
-
-      const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
-      const audio = new Audio(url)
-      audioRef.current = audio
-      audio.play()
-      audio.onended = () => {
-        URL.revokeObjectURL(url)
-        audioRef.current = null
-        setIsPlaying(false)
-      }
-      audio.onerror = () => {
-        setIsPlaying(false)
-        audioRef.current = null
-      }
-    } catch {
-      setIsPlaying(false)
-    }
-  }
-
   function stopAudio() {
-    if (audioRef.current) {
-      audioRef.current.pause()
-      audioRef.current = null
-      setIsPlaying(false)
+    if (audioCtxRef.current) {
+      audioCtxRef.current.suspend()
+      audioCtxRef.current.resume()
     }
+    setIsPlaying(false)
   }
 
   useEffect(() => {
@@ -191,6 +151,11 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
   }
 
   function selectVoice(voiceId: string) {
+    if (voiceId !== 'none') {
+      const ctx = new AudioContext()
+      ctx.resume()
+      audioCtxRef.current = ctx
+    }
     localStorage.setItem('voicePreference', voiceId)
     setVoicePreference(voiceId)
     sendMessage('__INICIAR__', true, voiceId)
@@ -260,10 +225,8 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
   }
 
   async function playTTSWithVoice(text: string, voiceId: string) {
-    if (audioRef.current) {
-      audioRef.current.pause()
-      audioRef.current = null
-    }
+    const ctx = audioCtxRef.current
+    if (!ctx) return
     const { before } = parseMessageContent(text)
     const textToSpeak = before.trim()
     if (!textToSpeak) return
@@ -275,13 +238,13 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
         body: JSON.stringify({ text: textToSpeak, voiceId }),
       })
       if (!res.ok) { setIsPlaying(false); return }
-      const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
-      const audio = new Audio(url)
-      audioRef.current = audio
-      audio.play()
-      audio.onended = () => { URL.revokeObjectURL(url); audioRef.current = null; setIsPlaying(false) }
-      audio.onerror = () => { setIsPlaying(false); audioRef.current = null }
+      const arrayBuffer = await res.arrayBuffer()
+      const audioBuffer = await ctx.decodeAudioData(arrayBuffer)
+      const source = ctx.createBufferSource()
+      source.buffer = audioBuffer
+      source.connect(ctx.destination)
+      source.start(0)
+      source.onended = () => setIsPlaying(false)
     } catch { setIsPlaying(false) }
   }
 

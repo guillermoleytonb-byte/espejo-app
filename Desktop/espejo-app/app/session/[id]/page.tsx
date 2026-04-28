@@ -76,8 +76,34 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
   const [isLoading, setIsLoading] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
   const [initialized, setInitialized] = useState(false)
+  const [isRecording, setIsRecording] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  const recognitionRef = useRef<SpeechRecognition | null>(null)
+
+  function toggleRecording() {
+    if (isRecording) {
+      recognitionRef.current?.stop()
+      setIsRecording(false)
+      return
+    }
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    if (!SR) return
+    const recognition = new SR()
+    recognition.lang = 'es-ES'
+    recognition.continuous = false
+    recognition.interimResults = false
+    recognition.onresult = (e: SpeechRecognitionEvent) => {
+      const transcript = e.results[0][0].transcript
+      setInput(prev => prev ? prev + ' ' + transcript : transcript)
+      setIsRecording(false)
+    }
+    recognition.onend = () => setIsRecording(false)
+    recognition.onerror = () => setIsRecording(false)
+    recognitionRef.current = recognition
+    recognition.start()
+    setIsRecording(true)
+  }
 
   useEffect(() => {
     loadMessages()
@@ -219,6 +245,19 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
       {!hasAnalysis && (
         <div className="flex-shrink-0 px-4 py-4 border-t" style={{ borderColor: '#1f1f1f', background: '#0a0a0a' }}>
           <div className="max-w-2xl mx-auto flex gap-3 items-end">
+            <button
+              onClick={toggleRecording}
+              disabled={isLoading}
+              title={isRecording ? 'Detener grabación' : 'Hablar'}
+              className="px-3 py-3 rounded-xl flex-shrink-0 transition-all"
+              style={{
+                background: isRecording ? '#ef4444' : '#1a1a1a',
+                border: `1px solid ${isRecording ? '#ef4444' : '#1f1f1f'}`,
+                fontSize: '18px',
+              }}
+            >
+              🎤
+            </button>
             <textarea
               ref={inputRef}
               value={input}

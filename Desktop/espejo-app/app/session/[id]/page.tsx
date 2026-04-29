@@ -141,7 +141,7 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
 
     if (storedMessages && storedMessages.length > 0) {
       setMessages(storedMessages.map(m => ({ role: m.role, content: m.content })))
-      const saved = localStorage.getItem('voicePreference') || 'leo'
+      const saved = localStorage.getItem('voicePreference') || 'none'
       setVoicePreference(saved)
       setInitialized(true)
     } else {
@@ -402,21 +402,22 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
       {/* Post-analysis CTA */}
       {hasAnalysis && (
         <div className="flex-shrink-0 px-4 py-6 border-t text-center" style={{ borderColor: '#1f1f1f' }}>
-          <p className="text-sm opacity-50 mb-4">Sesión completada</p>
-          <div className="flex gap-3 justify-center mb-6">
+          <p className="text-sm opacity-50 mb-1">Sesión completada</p>
+          <p className="text-xs opacity-30 mb-5">Tu próxima sesión profundizará lo que descubriste hoy</p>
+          <div className="flex flex-col items-center gap-3 mb-6">
             <Link
               href="/profile"
-              className="px-6 py-3 rounded-full text-sm font-medium"
+              className="px-8 py-3 rounded-full text-sm font-medium"
               style={{ background: '#d97706', color: '#0a0a0a' }}
             >
               Ver mi perfil
             </Link>
             <Link
               href="/dashboard"
-              className="px-6 py-3 rounded-full text-sm border"
-              style={{ borderColor: '#1f1f1f', color: '#f0ede8' }}
+              className="text-xs opacity-40 hover:opacity-70 transition-opacity underline"
+              style={{ color: '#f0ede8' }}
             >
-              Inicio
+              Ir al inicio
             </Link>
           </div>
           <div className="max-w-sm mx-auto rounded-xl px-4 py-3 text-xs leading-relaxed" style={{ background: '#111111', border: '1px solid #1f1f1f', color: '#f0ede8' }}>

@@ -20,19 +20,23 @@ export async function POST(request: Request) {
 
       if (paymentData.status === 'approved' && paymentData.external_reference) {
         const userId = paymentData.external_reference
+        const paymentId = String(body.data.id)
         const supabase = adminClient()
 
         const { data: profile } = await supabase
           .from('profiles')
-          .select('credits')
+          .select('credits, last_payment_id')
           .eq('id', userId)
           .single()
 
-        await supabase.from('profiles').upsert({
-          id: userId,
+        if (!profile) return new Response('User not found', { status: 200 })
+        if ((profile as any).last_payment_id === paymentId) return new Response('Already processed', { status: 200 })
+
+        await supabase.from('profiles').update({
           credits: (profile?.credits || 0) + 1,
+          last_payment_id: paymentId,
           updated_at: new Date().toISOString(),
-        })
+        }).eq('id', userId)
       }
     }
   } catch {}

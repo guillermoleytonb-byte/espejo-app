@@ -67,6 +67,13 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
     const isFirstSession = !prof || prof.sessions_count === 0
     if (!isFirstSession && (prof?.credits || 0) <= 0) redirect('/dashboard')
 
+    const { data } = await supabase2.from('sessions').insert({
+      user_id: u.id,
+      title: `Sesión ${(prof?.sessions_count || 0) + 1}`,
+    }).select().single()
+
+    if (!data) redirect('/dashboard')
+
     if (!isFirstSession) {
       await supabase2.from('profiles').update({
         credits: (prof?.credits || 1) - 1,
@@ -74,12 +81,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       }).eq('id', u.id)
     }
 
-    const { data } = await supabase2.from('sessions').insert({
-      user_id: u.id,
-      title: `Sesión ${(prof?.sessions_count || 0) + 1}`,
-    }).select().single()
-
-    if (data) redirect(`/session/${data.id}`)
+    redirect(`/session/${data.id}`)
   }
 
   return (
@@ -121,8 +123,15 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
 
         {/* Payment success banner */}
         {sp.payment === 'success' && (
-          <div className="rounded-xl px-5 py-4 mb-6 text-sm" style={{ background: '#14532d', border: '1px solid #16a34a', color: '#86efac' }}>
-            ¡Pago exitoso! Tu sesión está lista para comenzar.
+          <div className="rounded-xl px-5 py-4 mb-6" style={{ background: '#14532d', border: '1px solid #16a34a', color: '#86efac' }}>
+            <p className="text-sm font-medium">¡Pago exitoso!</p>
+            <p className="text-xs opacity-80 mt-1">Tu sesión está lista. Cuando quieras, comienza tu próximo viaje interior.</p>
+          </div>
+        )}
+        {sp.payment === 'failure' && (
+          <div className="rounded-xl px-5 py-4 mb-6" style={{ background: '#450a0a', border: '1px solid #dc2626', color: '#fca5a5' }}>
+            <p className="text-sm font-medium">El pago no se completó</p>
+            <p className="text-xs opacity-80 mt-1">Puedes intentarlo de nuevo cuando quieras.</p>
           </div>
         )}
 
@@ -171,7 +180,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
               </h2>
               <p className="text-xs opacity-40 mb-6">Cada sesión profundiza lo que descubriste en la anterior</p>
               <PayButton />
-              <p className="text-xs opacity-30 mt-3">Pago único · Sin suscripción</p>
+              <p className="text-sm opacity-60 mt-3">Pago único · Sin suscripción · Sin datos guardados</p>
             </>
           )}
           <p className="text-xs mt-5 opacity-25 leading-relaxed">

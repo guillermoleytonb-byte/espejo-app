@@ -6,9 +6,9 @@ import { createClient } from '@/lib/supabase/client'
 import type { ChatMessage } from '@/lib/types'
 
 const VOICES = [
-  { id: 'leo', label: 'Voz Espejo', description: 'La voz oficial de Espejo', icon: '🎙️' },
-  { id: 'rex', label: 'Voz masculina', description: 'Voz de hombre', icon: '👤' },
-  { id: 'ara', label: 'Voz femenina', description: 'Voz de mujer', icon: '👤' },
+  { id: 'espejo', label: 'Voz Espejo', description: 'La voz oficial de Espejo', icon: '🎙️' },
+  { id: 'male', label: 'Voz masculina', description: 'Voz de hombre', icon: '👤' },
+  { id: 'female', label: 'Voz femenina', description: 'Voz de mujer', icon: '👤' },
   { id: 'none', label: 'Sin voz', description: 'Solo texto', icon: '🔇' },
 ]
 

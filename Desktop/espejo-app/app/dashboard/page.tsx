@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import PayButton from '../components/PayButton'
+import SmartPayButton from '../components/SmartPayButton'
 import type { Profile, Session } from '@/lib/types'
 
 const AREA_LABELS: Record<string, string> = {
@@ -179,7 +179,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                 Sesión {sessionsCount + 1}
               </h2>
               <p className="text-xs opacity-40 mb-6">Cada sesión profundiza lo que descubriste en la anterior</p>
-              <PayButton />
+              <SmartPayButton />
               <p className="text-sm opacity-60 mt-3">Pago único · Sin suscripción · Sin datos guardados</p>
             </>
           )}

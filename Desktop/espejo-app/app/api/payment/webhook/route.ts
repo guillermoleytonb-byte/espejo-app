@@ -39,7 +39,9 @@ export async function POST(request: Request) {
         }).eq('id', userId)
       }
     }
-  } catch {}
+  } catch (e) {
+    console.error('MercadoPago webhook error:', e)
+  }
 
   return new Response('OK', { status: 200 })
 }

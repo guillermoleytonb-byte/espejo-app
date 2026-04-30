@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, use, useCallback } from 'react'
+import { useState, useEffect, useRef, use } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import type { ChatMessage } from '@/lib/types'
@@ -128,6 +128,11 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
     const saved = localStorage.getItem('lang')
     if (saved === 'en' || saved === 'es') setLang(saved)
     loadMessages()
+
+    return () => {
+      recognitionRef.current?.stop()
+      audioCtxRef.current?.close()
+    }
   }, [sessionId])
 
   useEffect(() => {

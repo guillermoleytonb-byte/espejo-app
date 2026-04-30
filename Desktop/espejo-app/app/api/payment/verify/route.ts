@@ -22,20 +22,34 @@ export async function POST(request: Request) {
 
     const payment = new Payment(mp)
     const paymentData = await payment.get({ id: paymentId })
+    const resolvedPaymentId = String(paymentData.id ?? paymentId)
 
     if (paymentData.status === 'approved' && paymentData.external_reference === user.id) {
       const admin = adminClient()
-      const { data: profile } = await admin.from('profiles').select('credits').eq('id', user.id).single()
+      const { data: profile } = await admin
+        .from('profiles')
+        .select('credits, last_payment_id')
+        .eq('id', user.id)
+        .single()
 
-      await admin.from('profiles').upsert({
-        id: user.id,
-        credits: (profile?.credits || 0) + 1,
+      if (!profile) return Response.json({ ok: false })
+
+      // Idempotency: skip if this payment was already processed
+      if ((profile as any).last_payment_id === resolvedPaymentId) {
+        return Response.json({ ok: true })
+      }
+
+      await admin.from('profiles').update({
+        credits: (profile.credits || 0) + 1,
+        last_payment_id: resolvedPaymentId,
         updated_at: new Date().toISOString(),
-      })
+      }).eq('id', user.id)
 
       return Response.json({ ok: true })
     }
-  } catch {}
+  } catch (e) {
+    console.error('Payment verify error:', e)
+  }
 
   return Response.json({ ok: false })
 }

@@ -44,7 +44,8 @@ export default function SignupPage() {
     }
 
     if (data.user) {
-      await supabase.from('profiles').upsert({ id: data.user.id, name })
+      const { error: profileError } = await supabase.from('profiles').upsert({ id: data.user.id, name })
+      if (profileError) console.error('Profile upsert error:', profileError)
       router.push('/dashboard')
       router.refresh()
     }

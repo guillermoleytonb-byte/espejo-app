@@ -110,7 +110,9 @@ async function saveInsightsData(
       user_id: userId,
       ...data,
     })
-  } catch {}
+  } catch (e) {
+    console.error('saveInsightsData error:', e)
+  }
 }
 
 async function updateProfileFromAnalysis(
@@ -129,7 +131,9 @@ async function updateProfileFromAnalysis(
       const { proposito, ...areas } = data
       if (Object.values(areas).some(v => Number(v) > 0)) newAreas = areas
       if (proposito) newPurpose = proposito
-    } catch {}
+    } catch (e) {
+      console.error('AREAS_DATA parse error:', e)
+    }
   }
 
   await supabase.from('profiles').upsert({

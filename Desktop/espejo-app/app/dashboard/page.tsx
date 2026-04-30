@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { cookies } from 'next/headers'
 import SmartPayButton from '../components/SmartPayButton'
 import type { Profile, Session } from '@/lib/types'
 
@@ -24,13 +25,17 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   const paymentId = sp2.payment_id || sp2.collection_id
   if (sp2.payment === 'success' && paymentId) {
     try {
+      const cookieStore = await cookies()
+      const cookieHeader = cookieStore.getAll().map(c => `${c.name}=${c.value}`).join('; ')
       await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/payment/verify`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Cookie: cookieHeader },
         body: JSON.stringify({ paymentId }),
         cache: 'no-store',
       })
-    } catch {}
+    } catch (e) {
+      console.error('Payment verify fetch error:', e)
+    }
   }
 
   const { data: profile } = await supabase
@@ -51,7 +56,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   const sessionList = sessions as Session[] | null
   const name = p?.name || user.email?.split('@')[0] || 'Viajero'
   const sessionsCount = p?.sessions_count || 0
-  const credits = (p as any)?.credits || 0
+  const credits = p?.credits || 0
   const areas = p?.life_areas || {}
   const hasAreas = Object.keys(areas).length > 0
   const isFree = sessionsCount === 0
@@ -67,19 +72,24 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
     const isFirstSession = !prof || prof.sessions_count === 0
     if (!isFirstSession && (prof?.credits || 0) <= 0) redirect('/dashboard')
 
+    // Decrement credit atomically before creating session to prevent race conditions.
+    // The .gt('credits', 0) filter ensures credits can't go below 0 concurrently.
+    if (!isFirstSession) {
+      const { data: decremented } = await supabase2
+        .from('profiles')
+        .update({ credits: (prof!.credits || 1) - 1, updated_at: new Date().toISOString() })
+        .eq('id', u.id)
+        .gt('credits', 0)
+        .select('id')
+      if (!decremented || decremented.length === 0) redirect('/dashboard')
+    }
+
     const { data } = await supabase2.from('sessions').insert({
       user_id: u.id,
       title: `Sesión ${(prof?.sessions_count || 0) + 1}`,
     }).select().single()
 
     if (!data) redirect('/dashboard')
-
-    if (!isFirstSession) {
-      await supabase2.from('profiles').update({
-        credits: (prof?.credits || 1) - 1,
-        updated_at: new Date().toISOString(),
-      }).eq('id', u.id)
-    }
 
     redirect(`/session/${data.id}`)
   }

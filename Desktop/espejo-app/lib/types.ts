@@ -1,6 +1,7 @@
 export interface Profile {
   id: string
   name: string | null
+  credits: number
   strengths: Strength[]
   life_areas: LifeAreas
   purpose: string

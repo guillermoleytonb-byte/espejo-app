@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { buildSystemPrompt } from '@/lib/claude-prompt'
+import { buildSystemPromptEn } from '@/lib/claude-prompt-en'
 import type { ChatMessage, Profile } from '@/lib/types'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
@@ -13,9 +14,10 @@ export async function POST(request: Request) {
     return Response.json({ error: 'No autorizado' }, { status: 401 })
   }
 
-  const { messages, sessionId } = await request.json() as {
+  const { messages, sessionId, lang } = await request.json() as {
     messages: ChatMessage[]
     sessionId: string
+    lang?: string
   }
 
   const { data: profile } = await supabase
@@ -25,7 +27,9 @@ export async function POST(request: Request) {
     .single()
 
   const isFirstSession = !profile || profile.sessions_count === 0
-  const systemPrompt = buildSystemPrompt(profile as Profile | null, isFirstSession)
+  const systemPrompt = lang === 'en'
+    ? buildSystemPromptEn(profile as Profile | null, isFirstSession)
+    : buildSystemPrompt(profile as Profile | null, isFirstSession)
 
   const lastUserMessage = messages[messages.length - 1]
   if (lastUserMessage?.role === 'user') {

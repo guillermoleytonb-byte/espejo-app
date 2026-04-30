@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 
-export default function PayButton({ label = 'Comprar sesión — $1.000' }: { label?: string }) {
+export default function PayButton({ label = 'Comprar sesión — $2.990' }: { label?: string }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
 

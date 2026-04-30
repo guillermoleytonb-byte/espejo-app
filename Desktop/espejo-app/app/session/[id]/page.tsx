@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect, useRef, use } from 'react'
+import { useState, useEffect, useRef, use, useCallback } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import type { ChatMessage } from '@/lib/types'
 
 const VOICES = [
-  { id: 'espejo', label: 'Voz Espejo', description: 'La voz oficial de Espejo', icon: '🎙️' },
+  { id: 'espejo', label: 'Voz de Guillermo', description: 'La voz oficial de Espejo', icon: '🎙️' },
   { id: 'male', label: 'Voz masculina', description: 'Voz de hombre', icon: '👤' },
   { id: 'female', label: 'Voz femenina', description: 'Voz de mujer', icon: '👤' },
   { id: 'none', label: 'Sin voz', description: 'Solo texto', icon: '🔇' },
@@ -89,8 +89,8 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const recognitionRef = useRef<any>(null)
-  const audioRef = useRef<HTMLAudioElement | null>(null)
   const audioCtxRef = useRef<AudioContext | null>(null)
+  const [lang, setLang] = useState<'es' | 'en'>('es')
 
   function toggleRecording() {
     if (isRecording) {
@@ -125,6 +125,8 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
   }
 
   useEffect(() => {
+    const saved = localStorage.getItem('lang')
+    if (saved === 'en' || saved === 'es') setLang(saved)
     loadMessages()
   }, [sessionId])
 
@@ -179,8 +181,9 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: isInit ? [{ role: 'user', content: 'Hola, quiero comenzar.' }] : newMessages,
+          messages: isInit ? [{ role: 'user', content: lang === 'en' ? 'Hi, I want to begin.' : 'Hola, quiero comenzar.' }] : newMessages,
           sessionId,
+          lang,
         }),
       })
 

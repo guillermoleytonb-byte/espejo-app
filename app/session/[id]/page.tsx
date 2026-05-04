@@ -103,6 +103,10 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
     if (isRecording) {
       recognitionRef.current?.stop()
       setIsRecording(false)
+      setTimeout(() => {
+        const val = inputRef.current?.value?.trim()
+        if (val && !isLoading) sendMessage(val)
+      }, 200)
       return
     }
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
@@ -262,6 +266,11 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
   }
 
   async function sendMessage(userInput: string, isInit = false, voiceId?: string) {
+    if (isRecording) {
+      recognitionRef.current?.stop()
+      setIsRecording(false)
+    }
+
     const newMessages: ChatMessage[] = isInit
       ? [{ role: 'user', content: 'Hola, quiero comenzar.' }]
       : [...messages, { role: 'user', content: userInput }]
@@ -489,7 +498,7 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
               onClick={toggleRecording}
               disabled={isLoading}
               title={isRecording ? 'Detener grabación' : 'Hablar'}
-              className="px-3 py-3 rounded-xl flex-shrink-0 transition-all"
+              className={`px-3 py-3 rounded-xl flex-shrink-0 transition-all ${isRecording ? 'mic-recording' : ''}`}
               style={{
                 background: isRecording ? '#ef4444' : '#1a1a1a',
                 border: `1px solid ${isRecording ? '#ef4444' : '#1f1f1f'}`,

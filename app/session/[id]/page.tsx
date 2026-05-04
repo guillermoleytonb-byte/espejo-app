@@ -118,7 +118,6 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
     const prefix = input.trim()
 
     recognition.onresult = (e: any) => {
-      console.log('[MIC] onresult fired, results:', e.results.length, 'resultIndex:', e.resultIndex)
       let finalText = ''
       let interimText = ''
       for (let i = 0; i < e.results.length; i++) {
@@ -129,12 +128,10 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
         }
       }
       const spoken = (finalText + interimText).trim()
-      console.log('[MIC] spoken:', spoken)
       setInput(prefix ? prefix + ' ' + spoken : spoken)
     }
-    recognition.onend = () => { console.log('[MIC] onend fired'); setIsRecording(false) }
+    recognition.onend = () => setIsRecording(false)
     recognition.onerror = (e: any) => {
-      console.log('[MIC] onerror fired, error:', e.error)
       setIsRecording(false)
       if (e.error === 'not-allowed') {
         setRecordingError('Permiso de micrófono denegado. Actívalo en tu navegador.')
@@ -145,7 +142,6 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
       }
     }
     recognitionRef.current = recognition
-    console.log('[MIC] starting recognition, lang:', recognition.lang)
     recognition.start()
     setIsRecording(true)
   }
